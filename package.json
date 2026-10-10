@@ -1,0 +1,14 @@
+{
+  "name": "inncontrol",
+  "version": "1.0.0",
+  "description": "InnControl - Hotel Room Reservation System strictly adhering to SE SAT II specifications",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  }
+}
