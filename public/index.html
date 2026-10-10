@@ -7,99 +7,181 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
   <!-- Header -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('customer')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-blue-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md">
           I
         </div>
-        <span class="text-xl font-bold tracking-tight text-slate-900">InnControl</span>
-        <span class="text-xs px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 rounded">v1.0 SAT II</span>
+        <div>
+          <span class="text-xl font-bold tracking-tight text-slate-900">InnControl</span>
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-indigo-600">Hotel Suites & Resorts</span>
+        </div>
       </div>
 
-      <!-- Navigation & Auth Switcher -->
-      <div class="flex items-center space-x-6">
-        <nav id="navLinks" class="flex space-x-4 text-sm font-medium text-slate-600">
-          <button onclick="switchTab('search')" id="tab-search" class="hover:text-slate-900 px-3 py-2 rounded-md transition-colors text-slate-900 font-semibold border-b-2 border-slate-900">
-            Find Rooms
+      <!-- Portal Navigation (Customer Login vs Admin Login) -->
+      <div class="flex items-center space-x-4">
+        
+        <!-- View Portal Toggle -->
+        <div class="bg-slate-100 p-1 rounded-lg flex items-center text-xs font-semibold">
+          <button id="btnPortalCustomer" onclick="switchPortal('customer')" 
+                  class="px-3 py-1.5 rounded-md transition-all bg-white text-indigo-700 shadow-sm">
+            🏨 Guest Portal
           </button>
-          <button onclick="switchTab('my-bookings')" id="tab-my-bookings" class="hover:text-slate-900 px-3 py-2 rounded-md transition-colors">
-            My Bookings
+          <button id="btnPortalAdmin" onclick="switchPortal('admin')" 
+                  class="px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900">
+            🛡️ Admin Console
           </button>
-          <button onclick="switchTab('admin')" id="tab-admin" class="hover:text-slate-900 px-3 py-2 rounded-md transition-colors hidden">
-            Admin Panel
-          </button>
-        </nav>
+        </div>
 
-        <!-- Simulated Auth Dropdown -->
-        <div class="flex items-center space-x-2 border-l border-gray-200 pl-4">
-          <label for="userSelect" class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Role:</label>
-          <select id="userSelect" onchange="onUserChange()" class="bg-white border border-gray-300 text-slate-800 text-sm rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900">
-            <option value="user1">user1 (Customer)</option>
-            <option value="user2">user2 (Customer)</option>
-            <option value="admin1">admin1 (Administrator)</option>
+        <!-- Role Selector Switcher -->
+        <div class="flex items-center space-x-2 border-l border-slate-200 pl-4">
+          <span class="text-xs font-semibold text-slate-500 hidden sm:inline">Active User:</span>
+          <select id="userSelect" onchange="onUserChange()" class="bg-white border border-slate-300 text-slate-800 text-xs font-medium rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm">
+            <option value="user1">👤 user1 (Customer)</option>
+            <option value="user2">👤 user2 (Customer)</option>
+            <option value="admin1">👑 admin1 (Administrator)</option>
           </select>
         </div>
+
       </div>
     </div>
   </header>
 
-  <!-- Notification Banner -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 max-w-md p-4 rounded-lg shadow-lg border text-sm font-medium transition-all duration-300 z-50"></div>
+  <!-- Navigation Bar for Customer Portal -->
+  <nav id="customerSubNav" class="bg-slate-900 text-white border-b border-slate-800 py-2.5 px-4 sm:px-8 shadow-inner">
+    <div class="max-w-7xl mx-auto flex items-center justify-between text-xs font-medium">
+      <div class="flex space-x-6">
+        <button onclick="switchTab('search')" id="tab-search" class="hover:text-indigo-400 py-1 transition text-indigo-400 font-bold border-b-2 border-indigo-400">
+          🔍 Find & Book Rooms
+        </button>
+        <button onclick="switchTab('my-bookings')" id="tab-my-bookings" class="hover:text-indigo-400 py-1 transition text-slate-300">
+          📜 My Booking History
+        </button>
+      </div>
+      <div class="text-slate-400 hidden md:block">
+        🌟 Exclusive Direct Booking Rates & Instant Confirmation
+      </div>
+    </div>
+  </nav>
 
-  <!-- Main Content Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+  <!-- Notification Banner -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 max-w-md p-4 rounded-xl shadow-2xl border text-sm font-medium transition-all duration-300 z-50"></div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
     
-    <!-- SECTION 1: SEARCH & SELECT ROOMS -->
+    <!-- GUEST PORTAL: SECTION 1 (SEARCH & FILTERS) -->
     <section id="view-search" class="space-y-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-4">
-        <div>
-          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Available Rooms & Suites</h1>
-          <p class="text-sm text-slate-500 mt-1">Select your preferred accommodation and specify number of rooms (1-5).</p>
+      
+      <!-- Hero & Date/Location Search Bar -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-2xl">
+          <span class="inline-block px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+            Premium Stays & Luxury Suites
+          </span>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Reserve Your Perfect Stay</h1>
+          <p class="text-sm text-slate-300 mt-2">Select your check-in dates, location, and guest count with live room inventory updates.</p>
         </div>
-        <button onclick="loadRooms()" class="inline-flex items-center text-sm font-medium text-slate-700 bg-white border border-gray-300 hover:bg-slate-50 px-3 py-1.5 rounded-md transition">
-          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Refresh Inventory
+
+        <!-- Interactive Search Bar Component -->
+        <div class="mt-6 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-900">
+          
+          <!-- Location Filter -->
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">📍 Destination / City</label>
+            <select id="searchLocation" onchange="loadRooms()" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm">
+              <option value="all">All Locations (Bengaluru)</option>
+              <option value="MG Road">MG Road</option>
+              <option value="Indiranagar">Indiranagar</option>
+              <option value="Koramangala">Koramangala</option>
+              <option value="UB City">UB City</option>
+              <option value="Whitefield">Whitefield</option>
+            </select>
+          </div>
+
+          <!-- Hotel Name Filter -->
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">🏨 Hotel Property</label>
+            <select id="searchHotel" onchange="loadRooms()" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm">
+              <option value="all">All Properties</option>
+              <option value="Grand Hotel">InnControl Grand Hotel</option>
+              <option value="Luxury Suites">InnControl Luxury Suites</option>
+              <option value="Express Stay">InnControl Express Stay</option>
+              <option value="Royal Palace">InnControl Royal Palace</option>
+              <option value="Business Resort">InnControl Business Resort</option>
+            </select>
+          </div>
+
+          <!-- Check-in Date -->
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">📅 Check-In Date</label>
+            <input type="date" id="searchCheckIn" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm" />
+          </div>
+
+          <!-- Check-out Date -->
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">📅 Check-Out Date</label>
+            <input type="date" id="searchCheckOut" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm" />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Room Results Header -->
+      <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+        <h2 class="text-xl font-bold text-slate-900 tracking-tight">Available Room Options</h2>
+        <button onclick="loadRooms()" class="inline-flex items-center text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition shadow-sm">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh Live Availability
         </button>
       </div>
 
       <!-- Rooms Grid -->
       <div id="roomsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Dynamic Room Cards will be inserted here -->
+        <!-- Dynamic Room Cards -->
       </div>
     </section>
 
-    <!-- SECTION 2: USER DASHBOARD (MY BOOKINGS) -->
+    <!-- GUEST PORTAL: SECTION 2 (MY BOOKINGS) -->
     <section id="view-my-bookings" class="space-y-6 hidden">
-      <div class="border-b border-gray-200 pb-4">
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Reservations</h1>
-        <p class="text-sm text-slate-500 mt-1">View your booking history, locked rate snapshots, and active status.</p>
+      <div class="border-b border-slate-200 pb-4 flex justify-between items-end">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Booking History</h1>
+          <p class="text-sm text-slate-500 mt-1">Review your past & upcoming reservations, historical price snapshots, and stay dates.</p>
+        </div>
+        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold">
+          Logged in as: <span id="lblUserIdentity" class="font-bold">user1</span>
+        </span>
       </div>
 
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm text-slate-700">
-            <thead class="bg-slate-50 border-b border-gray-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th class="px-6 py-3">Booking ID</th>
-                <th class="px-6 py-3">Customer Details</th>
-                <th class="px-6 py-3">Room</th>
-                <th class="px-6 py-3">Qty</th>
-                <th class="px-6 py-3">Snapshot Rate</th>
-                <th class="px-6 py-3">Grand Total</th>
-                <th class="px-6 py-3">Status</th>
-                <th class="px-6 py-3 text-right">Actions</th>
+                <th class="px-6 py-3.5">Booking ID</th>
+                <th class="px-6 py-3.5">Hotel & Location</th>
+                <th class="px-6 py-3.5">Stay Dates</th>
+                <th class="px-6 py-3.5">Room & Qty</th>
+                <th class="px-6 py-3.5">Snapshot Rate</th>
+                <th class="px-6 py-3.5">Grand Total</th>
+                <th class="px-6 py-3.5">Status</th>
+                <th class="px-6 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="userBookingsTable" class="divide-y divide-gray-200">
+            <tbody id="userBookingsTable" class="divide-y divide-slate-200">
               <!-- Dynamic Rows -->
             </tbody>
           </table>
@@ -107,28 +189,35 @@
       </div>
     </section>
 
-    <!-- SECTION 3: ADMIN DASHBOARD -->
+    <!-- ADMIN CONSOLE: SECTION 3 -->
     <section id="view-admin" class="space-y-6 hidden">
-      <div class="border-b border-gray-200 pb-4">
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">System Admin Console</h1>
-        <p class="text-sm text-slate-500 mt-1">Manage global reservations and sequentially advance guest status: <span class="font-mono bg-slate-100 px-1 rounded">CONFIRMED</span> &rarr; <span class="font-mono bg-slate-100 px-1 rounded">CHECKED_IN</span> &rarr; <span class="font-mono bg-slate-100 px-1 rounded">COMPLETED</span>.</p>
+      <div class="bg-gradient-to-r from-slate-900 to-indigo-900 text-white rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <span class="px-2.5 py-0.5 bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded text-xs font-bold uppercase tracking-wider">Admin Management Portal</span>
+          <h1 class="text-2xl font-extrabold tracking-tight mt-1">System Reservations Console</h1>
+          <p class="text-xs text-slate-300 mt-1">Advance customer workflow sequentially: <span class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">CONFIRMED</span> &rarr; <span class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">CHECKED_IN</span> &rarr; <span class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">COMPLETED</span></p>
+        </div>
+        <button onclick="loadAdminBookings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition shadow-md">
+          🔄 Refresh Reservations Audit
+        </button>
       </div>
 
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm text-slate-700">
-            <thead class="bg-slate-50 border-b border-gray-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th class="px-6 py-3">ID</th>
-                <th class="px-6 py-3">User ID</th>
-                <th class="px-6 py-3">Customer Name & Phone</th>
-                <th class="px-6 py-3">Room & Qty</th>
-                <th class="px-6 py-3">Total Amount</th>
-                <th class="px-6 py-3">Current Status</th>
-                <th class="px-6 py-3 text-right">Sequential Workflow</th>
+                <th class="px-6 py-3.5">ID</th>
+                <th class="px-6 py-3.5">User</th>
+                <th class="px-6 py-3.5">Guest & Phone</th>
+                <th class="px-6 py-3.5">Property & Dates</th>
+                <th class="px-6 py-3.5">Room & Qty</th>
+                <th class="px-6 py-3.5">Grand Total</th>
+                <th class="px-6 py-3.5">Current Status</th>
+                <th class="px-6 py-3.5 text-right">Workflow Action</th>
               </tr>
             </thead>
-            <tbody id="adminBookingsTable" class="divide-y divide-gray-200">
+            <tbody id="adminBookingsTable" class="divide-y divide-slate-200">
               <!-- Dynamic Rows -->
             </tbody>
           </table>
@@ -138,31 +227,50 @@
 
   </main>
 
-  <!-- CHECKOUT MODAL -->
-  <div id="checkoutModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4 z-40">
-    <div class="bg-white rounded-lg border border-gray-200 shadow-xl max-w-lg w-full overflow-hidden">
+  <!-- CHECKOUT MODAL COMPONENT -->
+  <div id="checkoutModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden transition-all transform scale-100">
+      
       <!-- Modal Header -->
-      <div class="px-6 py-4 bg-slate-50 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="text-lg font-bold text-slate-900">Reservation Summary & Checkout</h3>
-        <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex justify-between items-center">
+        <div>
+          <h3 class="text-lg font-bold">Complete Your Reservation</h3>
+          <p class="text-xs text-indigo-300">Review stay details & confirm booking</p>
+        </div>
+        <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
 
-      <!-- Modal Body -->
-      <form id="checkoutForm" onsubmit="submitReservation(event)" class="p-6 space-y-5">
+      <!-- Modal Form -->
+      <form id="checkoutForm" onsubmit="submitReservation(event)" class="p-6 space-y-4">
         <input type="hidden" id="modalRoomId" />
         <input type="hidden" id="modalQuantity" />
 
-        <!-- Selected Room Info Card -->
-        <div class="p-4 bg-slate-50 border border-gray-200 rounded-md flex justify-between items-center">
-          <div>
-            <div id="modalRoomName" class="font-bold text-slate-900">Room A (R101)</div>
-            <div id="modalRoomDetails" class="text-xs text-slate-500">Rate: Rs. 499 x 2 Room(s)</div>
+        <!-- Property & Room Card -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+          <div class="flex justify-between items-start">
+            <div>
+              <div id="modalHotelName" class="text-xs font-bold text-indigo-600 uppercase tracking-wider">InnControl Grand Hotel</div>
+              <div id="modalRoomName" class="font-bold text-slate-900 text-base">Room A (R101)</div>
+              <div id="modalLocation" class="text-xs text-slate-500">📍 MG Road, Bengaluru</div>
+            </div>
+            <span id="modalQuantityBadge" class="px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">2 Rooms</span>
           </div>
-          <span id="modalQuantityBadge" class="px-2.5 py-1 bg-slate-900 text-white text-xs font-semibold rounded">2 Rooms</span>
         </div>
 
-        <!-- Live Fare Calculation Table (BR4) -->
-        <div class="space-y-2 border-t border-b border-gray-200 py-3 text-sm">
+        <!-- Dates Display -->
+        <div class="grid grid-cols-2 gap-3 text-xs bg-indigo-50/60 p-3 rounded-lg border border-indigo-100">
+          <div>
+            <span class="text-slate-500 block">Check-In Date:</span>
+            <span id="modalCheckInDisp" class="font-bold text-slate-900">2026-10-12</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Check-Out Date:</span>
+            <span id="modalCheckOutDisp" class="font-bold text-slate-900">2026-10-15</span>
+          </div>
+        </div>
+
+        <!-- Live Calculation Table (BR4) -->
+        <div class="space-y-2 border-t border-b border-slate-200 py-3 text-sm">
           <div class="flex justify-between text-slate-600">
             <span>Base Total (<span id="calcRate">Rs. 499</span> &times; <span id="calcQty">2</span>):</span>
             <span id="calcBaseTotal" class="font-medium text-slate-900">Rs. 998</span>
@@ -170,133 +278,158 @@
           <div class="flex justify-between text-slate-600 items-center">
             <span class="flex items-center">
               Booking Charge:
-              <span class="ml-1.5 text-xs text-slate-400" title="Rs. 50 charge applied only if Base Total < Rs. 1,000">(BR4 condition)</span>
+              <span class="ml-1 text-[11px] text-slate-400" title="Rs. 50 charge applied only if Base Total < Rs. 1,000">(BR4)</span>
             </span>
             <span id="calcBookingCharge" class="font-medium text-slate-900">Rs. 50</span>
           </div>
-          <div class="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
+          <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-100">
             <span>Grand Total:</span>
-            <span id="calcGrandTotal" class="text-slate-900">Rs. 1,048</span>
+            <span id="calcGrandTotal" class="text-indigo-600">Rs. 1,048</span>
           </div>
         </div>
 
-        <!-- Form Inputs (BR5 Validation) -->
-        <div class="space-y-4">
+        <!-- Guest Details Form (BR5 Validation) -->
+        <div class="space-y-3">
           <div>
-            <label for="customerName" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Customer Name *</label>
-            <input type="text" id="customerName" required placeholder="e.g. John Doe"
-                   class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900" />
+            <label for="customerName" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Customer Full Name *</label>
+            <input type="text" id="customerName" required placeholder="e.g. Alice Smith"
+                   class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
           </div>
 
           <div>
-            <label for="customerPhone" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Phone Number (10 Digits) *</label>
+            <label for="customerPhone" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Phone Number (10 Digits) *</label>
             <input type="text" id="customerPhone" maxlength="10" required placeholder="e.g. 9876543210"
-                   class="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900" />
-            <p class="text-xs text-slate-400 mt-1">Must be exactly 10 numerical digits.</p>
+                   class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
           </div>
         </div>
 
         <!-- Validation Alert Box -->
-        <div id="modalError" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-xs font-medium"></div>
+        <div id="modalError" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs font-semibold"></div>
 
-        <!-- Modal Actions -->
-        <div class="flex justify-end space-x-3 pt-3">
-          <button type="button" onclick="closeCheckoutModal()" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-gray-300 rounded-md hover:bg-slate-50 transition">
+        <!-- Actions -->
+        <div class="flex justify-end space-x-3 pt-2">
+          <button type="button" onclick="closeCheckoutModal()" class="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition">
             Cancel
           </button>
-          <button type="submit" id="btnSubmitBooking" class="px-5 py-2 text-sm font-semibold text-white bg-slate-900 rounded-md hover:bg-slate-800 transition">
-            Confirm & Pay
+          <button type="submit" id="btnSubmitBooking" class="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md transition">
+            Confirm & Reserve
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Javascript Logic -->
+  <!-- JavaScript App Logic -->
   <script>
     let currentUserId = 'user1';
+    let currentPortal = 'customer'; // 'customer' or 'admin'
     let roomsCache = [];
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Default dates: Today and Tomorrow
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      document.getElementById('searchCheckIn').value = today.toISOString().split('T')[0];
+      document.getElementById('searchCheckOut').value = tomorrow.toISOString().split('T')[0];
+
       onUserChange();
     });
 
+    function switchPortal(portal) {
+      currentPortal = portal;
+      const btnCust = document.getElementById('btnPortalCustomer');
+      const btnAdmin = document.getElementById('btnPortalAdmin');
+
+      if (portal === 'admin') {
+        // Enforce user selection to admin1
+        document.getElementById('userSelect').value = 'admin1';
+        currentUserId = 'admin1';
+
+        btnAdmin.className = "px-3 py-1.5 rounded-md transition-all bg-white text-indigo-700 shadow-sm font-bold";
+        btnCust.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900 font-normal";
+        document.getElementById('customerSubNav').classList.add('hidden');
+
+        document.getElementById('view-search').classList.add('hidden');
+        document.getElementById('view-my-bookings').classList.add('hidden');
+        document.getElementById('view-admin').classList.remove('hidden');
+
+        loadAdminBookings();
+      } else {
+        // Guest Portal
+        if (currentUserId === 'admin1') {
+          document.getElementById('userSelect').value = 'user1';
+          currentUserId = 'user1';
+        }
+
+        btnCust.className = "px-3 py-1.5 rounded-md transition-all bg-white text-indigo-700 shadow-sm font-bold";
+        btnAdmin.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900 font-normal";
+        document.getElementById('customerSubNav').classList.remove('hidden');
+
+        switchTab('search');
+      }
+    }
+
     function onUserChange() {
       currentUserId = document.getElementById('userSelect').value;
-      const tabAdmin = document.getElementById('tab-admin');
+      document.getElementById('lblUserIdentity').textContent = currentUserId;
 
       if (currentUserId === 'admin1') {
-        tabAdmin.classList.remove('hidden');
-        switchTab('admin');
+        switchPortal('admin');
       } else {
-        tabAdmin.classList.add('hidden');
-        const activeTab = document.querySelector('nav button.font-semibold')?.id;
-        if (activeTab === 'tab-admin') {
-          switchTab('search');
-        } else {
-          refreshActiveTab();
-        }
+        switchPortal('customer');
       }
     }
 
     function switchTab(tabName) {
-      // Hide all tabs
+      if (currentPortal === 'admin') return;
+
       document.getElementById('view-search').classList.add('hidden');
       document.getElementById('view-my-bookings').classList.add('hidden');
       document.getElementById('view-admin').classList.add('hidden');
 
-      // Unselect headers
-      ['search', 'my-bookings', 'admin'].forEach(t => {
+      ['search', 'my-bookings'].forEach(t => {
         const btn = document.getElementById(`tab-${t}`);
         if (btn) {
-          btn.classList.remove('font-semibold', 'text-slate-900', 'border-b-2', 'border-slate-900');
-          btn.classList.add('text-slate-600');
+          btn.classList.remove('text-indigo-400', 'font-bold', 'border-b-2', 'border-indigo-400');
+          btn.classList.add('text-slate-300');
         }
       });
 
-      // Show selected
       document.getElementById(`view-${tabName}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`tab-${tabName}`);
       if (activeBtn) {
-        activeBtn.classList.add('font-semibold', 'text-slate-900', 'border-b-2', 'border-slate-900');
-        activeBtn.classList.remove('text-slate-600');
+        activeBtn.classList.add('text-indigo-400', 'font-bold', 'border-b-2', 'border-indigo-400');
+        activeBtn.classList.remove('text-slate-300');
       }
 
-      refreshActiveTab();
+      if (tabName === 'search') loadRooms();
+      else if (tabName === 'my-bookings') loadMyBookings();
     }
 
-    function refreshActiveTab() {
-      if (!document.getElementById('view-search').classList.contains('hidden')) {
-        loadRooms();
-      } else if (!document.getElementById('view-my-bookings').classList.contains('hidden')) {
-        loadMyBookings();
-      } else if (!document.getElementById('view-admin').classList.contains('hidden')) {
-        loadAdminBookings();
-      }
-    }
-
-    // --- Toast Notifications ---
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
-      toast.className = `fixed bottom-5 right-5 max-w-md p-4 rounded-lg shadow-lg border text-sm font-medium transition-all duration-300 z-50 ${
+      toast.className = `fixed bottom-5 right-5 max-w-md p-4 rounded-xl shadow-2xl border text-sm font-semibold transition-all duration-300 z-50 ${
         isError ? 'bg-red-50 border-red-200 text-red-800' : 'bg-slate-900 border-slate-900 text-white'
       }`;
       toast.classList.remove('hidden');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-      }, 4000);
+      setTimeout(() => toast.classList.add('hidden'), 4000);
     }
 
-    // --- Fetch Rooms ---
+    // --- Load Rooms with Filters ---
     async function loadRooms() {
+      const location = document.getElementById('searchLocation').value;
+      const hotel = document.getElementById('searchHotel').value;
+
       try {
-        const res = await fetch('/api/rooms');
-        const data = await res.json();
-        roomsCache = data;
-        renderRooms(data);
+        const res = await fetch(`/api/rooms?location=${encodeURIComponent(location)}&hotel=${encodeURIComponent(hotel)}`);
+        const rooms = await res.json();
+        roomsCache = rooms;
+        renderRooms(rooms);
       } catch (err) {
-        showToast('Failed to load room inventory', true);
+        showToast('Failed to load available rooms', true);
       }
     }
 
@@ -304,38 +437,50 @@
       const container = document.getElementById('roomsGrid');
       container.innerHTML = '';
 
+      if (rooms.length === 0) {
+        container.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-400 font-medium">No matching rooms found for the selected destination/hotel.</div>`;
+        return;
+      }
+
       rooms.forEach(room => {
         const isAvailable = room.availability > 0;
         const card = document.createElement('div');
-        card.className = 'bg-white border border-gray-200 rounded-lg p-5 shadow-sm flex flex-col justify-between hover:border-gray-300 transition-all';
-        
+        card.className = 'bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between';
+
         card.innerHTML = `
           <div>
-            <div class="flex justify-between items-start mb-2">
-              <div>
-                <span class="text-xs font-mono text-slate-400">${room.id}</span>
-                <h3 class="text-lg font-bold text-slate-900">${room.name}</h3>
-              </div>
-              <span class="text-lg font-bold text-slate-900">Rs. ${room.rate.toLocaleString()}<span class="text-xs font-normal text-slate-500">/night</span></span>
+            <div class="flex justify-between items-start">
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded">
+                ${room.id}
+              </span>
+              <span class="text-xl font-extrabold text-slate-900">
+                Rs. ${room.rate.toLocaleString()}<span class="text-xs font-normal text-slate-500">/night</span>
+              </span>
             </div>
-            
-            <div class="mt-4 flex items-center justify-between text-xs font-medium py-2 px-3 bg-slate-50 rounded border border-gray-100">
-              <span class="text-slate-500">Real-Time Stock:</span>
-              <span class="${isAvailable ? 'text-slate-900 font-bold' : 'text-red-600 font-semibold'}">
-                ${isAvailable ? `${room.availability} room(s) available` : 'Sold Out (0 left)'}
+
+            <div class="mt-3">
+              <h3 class="text-lg font-bold text-slate-900 tracking-tight">${room.name}</h3>
+              <p class="text-xs font-semibold text-indigo-600 mt-0.5">${room.hotel_name}</p>
+              <p class="text-xs text-slate-500 flex items-center mt-1">📍 ${room.location}</p>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between text-xs py-2 px-3 bg-slate-50 rounded-lg border border-slate-100">
+              <span class="text-slate-500 font-medium">Real-Time Inventory:</span>
+              <span class="${isAvailable ? 'text-emerald-700 font-bold' : 'text-red-600 font-bold'}">
+                ${isAvailable ? `● ${room.availability} Room(s) Left` : '✖ Sold Out'}
               </span>
             </div>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-gray-100 flex items-center space-x-3">
+          <div class="mt-5 pt-4 border-t border-slate-100 flex items-center space-x-3">
             <div class="w-1/3">
-              <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Qty (1-5)</label>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Rooms (1-5)</label>
               <input type="number" id="qty-${room.id}" min="1" max="5" value="1" ${!isAvailable ? 'disabled' : ''} 
-                     class="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm text-center font-medium focus:ring-1 focus:ring-slate-900 disabled:opacity-50" />
+                     class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-sm text-center font-bold focus:ring-2 focus:ring-indigo-600 disabled:opacity-50" />
             </div>
             <button onclick="openCheckout('${room.id}')" ${!isAvailable ? 'disabled' : ''}
-                    class="w-2/3 py-2 px-4 text-sm font-semibold rounded-md text-white ${isAvailable ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-300 cursor-not-allowed'} transition">
-              ${isAvailable ? 'Book Now' : 'Unavailable'}
+                    class="w-2/3 py-2.5 px-4 text-xs font-bold rounded-lg text-white ${isAvailable ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md' : 'bg-slate-300 cursor-not-allowed'} transition">
+              ${isAvailable ? 'Book This Room' : 'Unavailable'}
             </button>
           </div>
         `;
@@ -343,17 +488,19 @@
       });
     }
 
-    // --- Modal & Live Fare Calculation (BR4) ---
+    // --- Modal Checkout ---
     function openCheckout(roomId) {
       const room = roomsCache.find(r => r.id === roomId);
       if (!room) return;
 
       const qtyInput = document.getElementById(`qty-${roomId}`);
       const qty = parseInt(qtyInput.value, 10);
+      const checkIn = document.getElementById('searchCheckIn').value;
+      const checkOut = document.getElementById('searchCheckOut').value;
 
-      // BR1 Validation Check
+      // BR1 Validation
       if (!Number.isInteger(qty) || qty < 1 || qty > 5) {
-        showToast('Please select a valid quantity between 1 and 5.', true);
+        showToast('Quantity must be an integer between 1 and 5.', true);
         return;
       }
 
@@ -362,13 +509,22 @@
         return;
       }
 
+      if (!checkIn || !checkOut || new Date(checkOut) <= new Date(checkIn)) {
+        showToast('Please select valid check-in and check-out dates.', true);
+        return;
+      }
+
       document.getElementById('modalRoomId').value = room.id;
       document.getElementById('modalQuantity').value = qty;
+      document.getElementById('modalHotelName').textContent = room.hotel_name;
       document.getElementById('modalRoomName').textContent = `${room.name} (${room.id})`;
-      document.getElementById('modalRoomDetails').textContent = `Rate: Rs. ${room.rate.toLocaleString()} × ${qty} Room(s)`;
+      document.getElementById('modalLocation').textContent = `📍 ${room.location}`;
       document.getElementById('modalQuantityBadge').textContent = `${qty} Room(s)`;
 
-      // Calculate Fare (BR4)
+      document.getElementById('modalCheckInDisp').textContent = checkIn;
+      document.getElementById('modalCheckOutDisp').textContent = checkOut;
+
+      // BR4 Calculations
       const baseTotal = room.rate * qty;
       const bookingCharge = baseTotal < 1000 ? 50 : 0;
       const grandTotal = baseTotal + bookingCharge;
@@ -379,11 +535,7 @@
       document.getElementById('calcBookingCharge').textContent = `Rs. ${bookingCharge}`;
       document.getElementById('calcGrandTotal').textContent = `Rs. ${grandTotal.toLocaleString()}`;
 
-      // Reset form errors
       document.getElementById('modalError').classList.add('hidden');
-      document.getElementById('customerName').value = '';
-      document.getElementById('customerPhone').value = '';
-
       document.getElementById('checkoutModal').classList.remove('hidden');
       document.getElementById('checkoutModal').classList.add('flex');
     }
@@ -403,8 +555,10 @@
       const quantity = document.getElementById('modalQuantity').value;
       const customerName = document.getElementById('customerName').value.trim();
       const phone = document.getElementById('customerPhone').value.trim();
+      const checkInDate = document.getElementById('modalCheckInDisp').textContent;
+      const checkOutDate = document.getElementById('modalCheckOutDisp').textContent;
 
-      // BR5 Frontend Pre-validation
+      // BR5 Frontend Validation
       if (!customerName) {
         modalError.textContent = 'Customer Name cannot be empty.';
         modalError.classList.remove('hidden');
@@ -413,7 +567,7 @@
 
       const phoneRegex = /^\d{10}$/;
       if (!phoneRegex.test(phone)) {
-        modalError.textContent = 'Phone Number must be exactly 10 numerical digits (e.g. 9876543210).';
+        modalError.textContent = 'Phone Number must be exactly 10 numerical digits.';
         modalError.classList.remove('hidden');
         return;
       }
@@ -425,13 +579,13 @@
             'Content-Type': 'application/json',
             'x-user-id': currentUserId
           },
-          body: JSON.stringify({ roomId, quantity, customerName, phone })
+          body: JSON.stringify({ roomId, quantity, customerName, phone, checkInDate, checkOutDate })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          modalError.textContent = data.error || 'Failed to create reservation.';
+          modalError.textContent = data.error || 'Failed to process reservation.';
           modalError.classList.remove('hidden');
           return;
         }
@@ -440,7 +594,7 @@
         showToast(`Reservation #${data.reservation.id} confirmed successfully!`);
         loadRooms();
       } catch (err) {
-        modalError.textContent = 'Network or server error encountered.';
+        modalError.textContent = 'Server communication error.';
         modalError.classList.remove('hidden');
       }
     }
@@ -463,7 +617,7 @@
       tbody.innerHTML = '';
 
       if (bookings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">No reservations found for current user.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-slate-400 font-medium">No booking records found for ${currentUserId}.</td></tr>`;
         return;
       }
 
@@ -473,23 +627,26 @@
         tr.className = 'hover:bg-slate-50/80 transition-colors';
 
         tr.innerHTML = `
-          <td class="px-6 py-4 font-mono text-xs text-slate-500">#${b.id}</td>
+          <td class="px-6 py-4 font-mono text-xs text-slate-500 font-bold">#${b.id}</td>
           <td class="px-6 py-4">
-            <div class="font-semibold text-slate-900">${escapeHtml(b.customer_name)}</div>
-            <div class="text-xs text-slate-500">${escapeHtml(b.phone)}</div>
+            <div class="font-bold text-slate-900 text-xs">${escapeHtml(b.hotel_name || 'InnControl Hotel')}</div>
+            <div class="text-[11px] text-slate-500">📍 ${escapeHtml(b.location || 'Bengaluru')}</div>
           </td>
-          <td class="px-6 py-4 font-medium text-slate-900">${b.room_name} (${b.room_id})</td>
-          <td class="px-6 py-4 font-medium text-slate-900">${b.quantity}</td>
+          <td class="px-6 py-4 text-xs font-medium text-slate-700">
+            <div>In: <span class="font-bold">${b.check_in_date || 'N/A'}</span></div>
+            <div>Out: <span class="font-bold">${b.check_out_date || 'N/A'}</span></div>
+          </td>
+          <td class="px-6 py-4 font-semibold text-slate-900">${b.room_name} (${b.room_id}) &times; ${b.quantity}</td>
           <td class="px-6 py-4 text-slate-700">Rs. ${b.rate_snapshot.toLocaleString()}</td>
-          <td class="px-6 py-4 font-bold text-slate-900">Rs. ${b.grand_total.toLocaleString()}</td>
+          <td class="px-6 py-4 font-extrabold text-indigo-600">Rs. ${b.grand_total.toLocaleString()}</td>
           <td class="px-6 py-4">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusBadgeClass(b.status)}">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getStatusBadgeClass(b.status)}">
               ${b.status}
             </span>
           </td>
           <td class="px-6 py-4 text-right">
             ${isConfirmed ? `
-              <button onclick="cancelReservation(${b.id})" class="text-xs font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1 rounded transition">
+              <button onclick="cancelReservation(${b.id})" class="text-xs font-bold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1 rounded-lg transition">
                 Cancel Booking
               </button>
             ` : '<span class="text-xs text-slate-400">&mdash;</span>'}
@@ -500,7 +657,7 @@
     }
 
     async function cancelReservation(resId) {
-      if (!confirm(`Are you sure you want to cancel Reservation #${resId}? This will restore the room availability.`)) return;
+      if (!confirm(`Are you sure you want to cancel Reservation #${resId}? Inventory will be restored.`)) return;
 
       try {
         const res = await fetch(`/api/reservations/${resId}/cancel`, {
@@ -530,7 +687,7 @@
 
         if (res.status === 403) {
           document.getElementById('adminBookingsTable').innerHTML = `
-            <tr><td colspan="7" class="text-center py-8 text-red-600 font-medium">Access Denied (HTTP 403). Switch to 'admin1' to view the admin console.</td></tr>
+            <tr><td colspan="8" class="text-center py-10 text-red-600 font-bold">Access Denied (HTTP 403). Active identity must be 'admin1'.</td></tr>
           `;
           return;
         }
@@ -547,7 +704,7 @@
       tbody.innerHTML = '';
 
       if (reservations.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400">No system reservations found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-slate-400 font-medium">No reservations in the system database.</td></tr>`;
         return;
       }
 
@@ -555,34 +712,38 @@
         let actionBtnHTML = '';
         if (b.status === 'CONFIRMED') {
           actionBtnHTML = `
-            <button onclick="advanceStatus(${b.id})" class="text-xs font-semibold text-slate-900 bg-white hover:bg-slate-100 border border-gray-300 px-3 py-1 rounded transition">
+            <button onclick="advanceStatus(${b.id})" class="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1 rounded-lg transition shadow-sm">
               Advance &rarr; CHECKED_IN
             </button>
           `;
         } else if (b.status === 'CHECKED_IN') {
           actionBtnHTML = `
-            <button onclick="advanceStatus(${b.id})" class="text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1 rounded transition">
+            <button onclick="advanceStatus(${b.id})" class="text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-lg transition shadow-sm">
               Advance &rarr; COMPLETED
             </button>
           `;
         } else {
-          actionBtnHTML = `<span class="text-xs text-slate-400 italic">No further actions</span>`;
+          actionBtnHTML = `<span class="text-xs text-slate-400 italic">Sequential limit reached</span>`;
         }
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 transition-colors';
 
         tr.innerHTML = `
-          <td class="px-6 py-4 font-mono text-xs text-slate-500">#${b.id}</td>
-          <td class="px-6 py-4 font-medium text-slate-700">${escapeHtml(b.user_id)}</td>
+          <td class="px-6 py-4 font-mono text-xs font-bold text-slate-500">#${b.id}</td>
+          <td class="px-6 py-4 font-bold text-slate-800">${escapeHtml(b.user_id)}</td>
           <td class="px-6 py-4">
-            <div class="font-semibold text-slate-900">${escapeHtml(b.customer_name)}</div>
+            <div class="font-bold text-slate-900">${escapeHtml(b.customer_name)}</div>
             <div class="text-xs text-slate-500">${escapeHtml(b.phone)}</div>
           </td>
-          <td class="px-6 py-4 text-slate-800">${b.room_name} (${b.room_id}) &times; ${b.quantity}</td>
-          <td class="px-6 py-4 font-bold text-slate-900">Rs. ${b.grand_total.toLocaleString()}</td>
+          <td class="px-6 py-4 text-xs">
+            <div class="font-bold text-slate-800">${escapeHtml(b.hotel_name || 'InnControl Hotel')}</div>
+            <div class="text-slate-500">${b.check_in_date || 'N/A'} &rarr; ${b.check_out_date || 'N/A'}</div>
+          </td>
+          <td class="px-6 py-4 text-slate-800 font-semibold">${b.room_name} (${b.room_id}) &times; ${b.quantity}</td>
+          <td class="px-6 py-4 font-extrabold text-indigo-600">Rs. ${b.grand_total.toLocaleString()}</td>
           <td class="px-6 py-4">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusBadgeClass(b.status)}">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getStatusBadgeClass(b.status)}">
               ${b.status}
             </span>
           </td>
@@ -614,7 +775,6 @@
       }
     }
 
-    // --- Helpers ---
     function getStatusBadgeClass(status) {
       switch(status) {
         case 'CONFIRMED': return 'bg-blue-50 text-blue-700 border border-blue-200';

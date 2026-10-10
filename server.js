@@ -34,19 +34,34 @@ app.get('/api/me', authMiddleware, (req, res) => {
   res.json(req.user);
 });
 
-// 2. Get Rooms (Resources)
+// 2. Get Rooms (Resources) with optional filtering by location or hotel
 app.get('/api/rooms', async (req, res) => {
   try {
-    const rooms = await allAsync('SELECT * FROM Resources ORDER BY id ASC');
+    const { location, hotel } = req.query;
+    let sql = 'SELECT * FROM Resources WHERE 1=1';
+    const params = [];
+
+    if (location && location !== 'all') {
+      sql += ' AND location LIKE ?';
+      params.push(`%${location}%`);
+    }
+
+    if (hotel && hotel !== 'all') {
+      sql += ' AND hotel_name LIKE ?';
+      params.push(`%${hotel}%`);
+    }
+
+    sql += ' ORDER BY id ASC';
+    const rooms = await allAsync(sql, params);
     res.json(rooms);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch rooms' });
   }
 });
 
-// 3. Create Reservation (BR1, BR2, BR3, BR4, BR5, BR6, BR7)
+// 3. Create Reservation (BR1, BR2, BR3, BR4, BR5, BR6, BR7 + Dates, Hotel & Location)
 app.post('/api/reservations', authMiddleware, async (req, res) => {
-  const { roomId, quantity, customerName, phone } = req.body;
+  const { roomId, quantity, customerName, phone, checkInDate, checkOutDate } = req.body;
   const user = req.user;
 
   // BR5: Customer Name cannot be empty. Phone Number must be exactly 10 digits (regex).
@@ -63,6 +78,15 @@ app.post('/api/reservations', authMiddleware, async (req, res) => {
   const qtyNum = Number(quantity);
   if (!Number.isInteger(qtyNum) || qtyNum < 1 || qtyNum > 5) {
     return res.status(400).json({ error: 'Quantity must be an integer between 1 and 5.' });
+  }
+
+  // Date validation
+  if (!checkInDate || !checkOutDate) {
+    return res.status(400).json({ error: 'Check-in and Check-out dates are required.' });
+  }
+
+  if (new Date(checkOutDate) <= new Date(checkInDate)) {
+    return res.status(400).json({ error: 'Check-out date must be after Check-in date.' });
   }
 
   // BR2, BR6 & BR7: Transactional creation with immediate room availability check & deduction
@@ -92,9 +116,9 @@ app.post('/api/reservations', authMiddleware, async (req, res) => {
 
     // BR3: Insert CONFIRMED Reservation
     const resResult = await runAsync(
-      `INSERT INTO Reservations (user_id, customer_name, phone, base_total, booking_charge, grand_total, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMED')`,
-      [user.id, customerName.trim(), phone.trim(), baseTotal, bookingCharge, grandTotal]
+      `INSERT INTO Reservations (user_id, customer_name, phone, base_total, booking_charge, grand_total, status, check_in_date, check_out_date, hotel_name, location)
+       VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMED', ?, ?, ?, ?)`,
+      [user.id, customerName.trim(), phone.trim(), baseTotal, bookingCharge, grandTotal, checkInDate, checkOutDate, room.hotel_name, room.location]
     );
 
     const reservationId = resResult.lastID;
@@ -234,7 +258,6 @@ app.get('/api/admin/reservations', authMiddleware, async (req, res) => {
        ORDER BY r.id DESC`
     );
 
-    // Fetch history for transparency
     const history = await allAsync(
       `SELECT * FROM StatusHistory ORDER BY changed_at ASC`
     );
@@ -246,7 +269,6 @@ app.get('/api/admin/reservations', authMiddleware, async (req, res) => {
 });
 
 // 7. Admin Advance Status (BR8)
-// Sequential advance: CONFIRMED -> CHECKED_IN -> COMPLETED
 app.post('/api/admin/reservations/:id/advance', authMiddleware, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden: Admin access required.' });
@@ -299,7 +321,7 @@ app.post('/api/admin/reservations/:id/advance', authMiddleware, async (req, res)
 // Initialize DB and start server
 initDb().then(() => {
   app.listen(PORT, () => {
-    console.log(`StayPulse Server listening on http://localhost:${PORT}`);
+    console.log(`InnControl Server listening on http://localhost:${PORT}`);
   });
 }).catch(err => {
   console.error('Failed to initialize database:', err);
