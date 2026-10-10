@@ -19,7 +19,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand Logo -->
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('customer')">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchPortal('customer')">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-blue-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md">
           I
         </div>
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <!-- Portal Navigation (Customer Login vs Admin Login) -->
+      <!-- Portal Controls & User Status -->
       <div class="flex items-center space-x-4">
         
         <!-- View Portal Toggle -->
@@ -44,14 +44,9 @@
           </button>
         </div>
 
-        <!-- Role Selector Switcher -->
-        <div class="flex items-center space-x-2 border-l border-slate-200 pl-4">
-          <span class="text-xs font-semibold text-slate-500 hidden sm:inline">Active User:</span>
-          <select id="userSelect" onchange="onUserChange()" class="bg-white border border-slate-300 text-slate-800 text-xs font-medium rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm">
-            <option value="user1">👤 user1 (Customer)</option>
-            <option value="user2">👤 user2 (Customer)</option>
-            <option value="admin1">👑 admin1 (Administrator)</option>
-          </select>
+        <!-- Auth Status & Login Trigger -->
+        <div id="authStatusContainer" class="flex items-center space-x-2 border-l border-slate-200 pl-4 text-xs font-semibold">
+          <!-- Rendered via JS -->
         </div>
 
       </div>
@@ -95,10 +90,9 @@
           <p class="text-sm text-slate-300 mt-2">Select your check-in dates, location, and guest count with live room inventory updates.</p>
         </div>
 
-        <!-- Interactive Search Bar Component -->
+        <!-- Search Bar -->
         <div class="mt-6 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-900">
           
-          <!-- Location Filter -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">📍 Destination / City</label>
             <select id="searchLocation" onchange="loadRooms()" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm">
@@ -111,7 +105,6 @@
             </select>
           </div>
 
-          <!-- Hotel Name Filter -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">🏨 Hotel Property</label>
             <select id="searchHotel" onchange="loadRooms()" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm">
@@ -124,13 +117,11 @@
             </select>
           </div>
 
-          <!-- Check-in Date -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">📅 Check-In Date</label>
             <input type="date" id="searchCheckIn" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm" />
           </div>
 
-          <!-- Check-out Date -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-200 mb-1">📅 Check-Out Date</label>
             <input type="date" id="searchCheckOut" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm" />
@@ -227,6 +218,62 @@
 
   </main>
 
+  <!-- LOGIN MODAL COMPONENT -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden">
+      <div class="px-6 py-5 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex justify-between items-center">
+        <div>
+          <h3 class="text-lg font-bold">User Authentication</h3>
+          <p class="text-xs text-indigo-300">Login with customer or admin credentials</p>
+        </div>
+        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="loginForm" onsubmit="submitLogin(event)" class="p-6 space-y-4">
+        
+        <!-- Pre-configured Credentials Quick Selector -->
+        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl space-y-1 text-xs">
+          <span class="font-bold text-indigo-900 block mb-1">🔑 Quick Demo Accounts:</span>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="fillCredentials('user1', 'user123')" class="px-2 py-1 bg-white border border-indigo-200 rounded text-slate-700 hover:bg-indigo-100 font-semibold transition">
+              user1
+            </button>
+            <button type="button" onclick="fillCredentials('user2', 'user123')" class="px-2 py-1 bg-white border border-indigo-200 rounded text-slate-700 hover:bg-indigo-100 font-semibold transition">
+              user2
+            </button>
+            <button type="button" onclick="fillCredentials('admin1', 'admin123')" class="px-2 py-1 bg-white border border-amber-300 bg-amber-50 rounded text-amber-900 hover:bg-amber-100 font-bold transition">
+              admin1
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="loginUsername" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Username / User ID *</label>
+          <input type="text" id="loginUsername" required placeholder="user1"
+                 class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+
+        <div>
+          <label for="loginPassword" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Password *</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••"
+                 class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        </div>
+
+        <!-- Login Error Box -->
+        <div id="loginError" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs font-semibold"></div>
+
+        <div class="flex justify-end space-x-3 pt-2">
+          <button type="button" onclick="closeLoginModal()" class="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md transition">
+            Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- CHECKOUT MODAL COMPONENT -->
   <div id="checkoutModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden transition-all transform scale-100">
@@ -321,12 +368,11 @@
 
   <!-- JavaScript App Logic -->
   <script>
-    let currentUserId = 'user1';
+    let currentUser = { id: 'user1', name: 'User One', role: 'user' };
     let currentPortal = 'customer'; // 'customer' or 'admin'
     let roomsCache = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Default dates: Today and Tomorrow
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -334,8 +380,75 @@
       document.getElementById('searchCheckIn').value = today.toISOString().split('T')[0];
       document.getElementById('searchCheckOut').value = tomorrow.toISOString().split('T')[0];
 
-      onUserChange();
+      renderAuthStatus();
+      loadRooms();
     });
+
+    function renderAuthStatus() {
+      const container = document.getElementById('authStatusContainer');
+      container.innerHTML = `
+        <span class="text-slate-500">Logged in:</span>
+        <span class="font-bold text-slate-900">${currentUser.id} (${currentUser.role})</span>
+        <button onclick="openLoginModal()" class="ml-2 text-xs text-indigo-600 hover:text-indigo-800 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-md transition font-semibold">
+          Switch User / Login
+        </button>
+      `;
+      document.getElementById('lblUserIdentity').textContent = currentUser.id;
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginError').classList.add('hidden');
+      document.getElementById('loginModal').classList.remove('hidden');
+      document.getElementById('loginModal').classList.add('flex');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('loginModal').classList.remove('flex');
+    }
+
+    function fillCredentials(username, password) {
+      document.getElementById('loginUsername').value = username;
+      document.getElementById('loginPassword').value = password;
+    }
+
+    async function submitLogin(event) {
+      event.preventDefault();
+      const loginError = document.getElementById('loginError');
+      loginError.classList.add('hidden');
+
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          loginError.textContent = data.error || 'Authentication failed.';
+          loginError.classList.remove('hidden');
+          return;
+        }
+
+        currentUser = data.user;
+        renderAuthStatus();
+        closeLoginModal();
+        showToast(`Logged in successfully as ${currentUser.id} (${currentUser.role})`);
+
+        if (currentUser.role === 'admin') {
+          switchPortal('admin');
+        } else {
+          switchPortal('customer');
+        }
+      } catch (err) {
+        loginError.textContent = 'Server connection failed.';
+        loginError.classList.remove('hidden');
+      }
+    }
 
     function switchPortal(portal) {
       currentPortal = portal;
@@ -343,10 +456,6 @@
       const btnAdmin = document.getElementById('btnPortalAdmin');
 
       if (portal === 'admin') {
-        // Enforce user selection to admin1
-        document.getElementById('userSelect').value = 'admin1';
-        currentUserId = 'admin1';
-
         btnAdmin.className = "px-3 py-1.5 rounded-md transition-all bg-white text-indigo-700 shadow-sm font-bold";
         btnCust.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900 font-normal";
         document.getElementById('customerSubNav').classList.add('hidden');
@@ -357,28 +466,11 @@
 
         loadAdminBookings();
       } else {
-        // Guest Portal
-        if (currentUserId === 'admin1') {
-          document.getElementById('userSelect').value = 'user1';
-          currentUserId = 'user1';
-        }
-
         btnCust.className = "px-3 py-1.5 rounded-md transition-all bg-white text-indigo-700 shadow-sm font-bold";
         btnAdmin.className = "px-3 py-1.5 rounded-md transition-all text-slate-600 hover:text-slate-900 font-normal";
         document.getElementById('customerSubNav').classList.remove('hidden');
 
         switchTab('search');
-      }
-    }
-
-    function onUserChange() {
-      currentUserId = document.getElementById('userSelect').value;
-      document.getElementById('lblUserIdentity').textContent = currentUserId;
-
-      if (currentUserId === 'admin1') {
-        switchPortal('admin');
-      } else {
-        switchPortal('customer');
       }
     }
 
@@ -577,7 +669,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-id': currentUserId
+            'x-user-id': currentUser.id
           },
           body: JSON.stringify({ roomId, quantity, customerName, phone, checkInDate, checkOutDate })
         });
@@ -603,7 +695,7 @@
     async function loadMyBookings() {
       try {
         const res = await fetch('/api/reservations/my', {
-          headers: { 'x-user-id': currentUserId }
+          headers: { 'x-user-id': currentUser.id }
         });
         const bookings = await res.json();
         renderUserBookings(bookings);
@@ -617,7 +709,7 @@
       tbody.innerHTML = '';
 
       if (bookings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-slate-400 font-medium">No booking records found for ${currentUserId}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-slate-400 font-medium">No booking records found for ${currentUser.id}.</td></tr>`;
         return;
       }
 
@@ -662,7 +754,7 @@
       try {
         const res = await fetch(`/api/reservations/${resId}/cancel`, {
           method: 'POST',
-          headers: { 'x-user-id': currentUserId }
+          headers: { 'x-user-id': currentUser.id }
         });
         const data = await res.json();
 
@@ -682,12 +774,12 @@
     async function loadAdminBookings() {
       try {
         const res = await fetch('/api/admin/reservations', {
-          headers: { 'x-user-id': currentUserId }
+          headers: { 'x-user-id': currentUser.id }
         });
 
         if (res.status === 403) {
           document.getElementById('adminBookingsTable').innerHTML = `
-            <tr><td colspan="8" class="text-center py-10 text-red-600 font-bold">Access Denied (HTTP 403). Active identity must be 'admin1'.</td></tr>
+            <tr><td colspan="8" class="text-center py-10 text-red-600 font-bold">Access Denied (HTTP 403). Logged-in user '${currentUser.id}' does not have Admin privileges.</td></tr>
           `;
           return;
         }
@@ -759,7 +851,7 @@
       try {
         const res = await fetch(`/api/admin/reservations/${resId}/advance`, {
           method: 'POST',
-          headers: { 'x-user-id': currentUserId }
+          headers: { 'x-user-id': currentUser.id }
         });
 
         const data = await res.json();

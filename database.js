@@ -36,18 +36,25 @@ async function initDb() {
 
   await runAsync('PRAGMA foreign_keys = ON');
 
-  // 1. Users Table
+  // 1. Users Table with passwords
   await runAsync(`
     CREATE TABLE IF NOT EXISTS Users (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      password TEXT NOT NULL DEFAULT 'user123',
       role TEXT NOT NULL CHECK(role IN ('user', 'admin'))
     );
   `);
 
-  await runAsync(`INSERT OR IGNORE INTO Users (id, name, role) VALUES ('user1', 'User One', 'user')`);
-  await runAsync(`INSERT OR IGNORE INTO Users (id, name, role) VALUES ('user2', 'User Two', 'user')`);
-  await runAsync(`INSERT OR IGNORE INTO Users (id, name, role) VALUES ('admin1', 'Admin One', 'admin')`);
+  try { await runAsync(`ALTER TABLE Users ADD COLUMN password TEXT NOT NULL DEFAULT 'user123'`); } catch (e) {}
+
+  // Update existing seeded records or insert if missing
+  await runAsync(`INSERT OR IGNORE INTO Users (id, name, password, role) VALUES ('user1', 'User One', 'user123', 'user')`);
+  await runAsync(`INSERT OR IGNORE INTO Users (id, name, password, role) VALUES ('user2', 'User Two', 'user123', 'user')`);
+  await runAsync(`INSERT OR IGNORE INTO Users (id, name, password, role) VALUES ('admin1', 'Admin One', 'admin123', 'admin')`);
+
+  await runAsync(`UPDATE Users SET password = 'user123' WHERE id IN ('user1', 'user2')`);
+  await runAsync(`UPDATE Users SET password = 'admin123' WHERE id = 'admin1'`);
 
   // 2. Resources Table (Rooms)
   await runAsync(`
@@ -61,15 +68,9 @@ async function initDb() {
     );
   `);
 
-  // Migration check in case table existed previously without hotel_name / location
-  try {
-    await runAsync(`ALTER TABLE Resources ADD COLUMN hotel_name TEXT DEFAULT 'InnControl Grand Hotel'`);
-  } catch (e) {}
-  try {
-    await runAsync(`ALTER TABLE Resources ADD COLUMN location TEXT DEFAULT 'City Center, Bengaluru'`);
-  } catch (e) {}
+  try { await runAsync(`ALTER TABLE Resources ADD COLUMN hotel_name TEXT DEFAULT 'InnControl Grand Hotel'`); } catch (e) {}
+  try { await runAsync(`ALTER TABLE Resources ADD COLUMN location TEXT DEFAULT 'City Center, Bengaluru'`); } catch (e) {}
 
-  // Seed Initial Room Data (Strict SAT II specs retained)
   const seedRooms = [
     { id: 'R101', name: 'Room A', rate: 499, availability: 10, hotel_name: 'InnControl Grand Hotel', location: 'MG Road, Bengaluru' },
     { id: 'R102', name: 'Room B', rate: 799, availability: 5, hotel_name: 'InnControl Luxury Suites', location: 'Indiranagar, Bengaluru' },
@@ -139,7 +140,7 @@ async function initDb() {
     );
   `);
 
-  console.log('Database initialized successfully with expanded schema and seed data.');
+  console.log('Database initialized successfully with user credentials, schema, and seed data.');
 }
 
 module.exports = {

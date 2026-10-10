@@ -29,12 +29,34 @@ async function authMiddleware(req, res, next) {
 
 // ------------------- API ENDPOINTS -------------------
 
-// 1. Get Logged-in User Profile
-app.get('/api/me', authMiddleware, (req, res) => {
-  res.json(req.user);
+// Login Endpoint (Authentication)
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required.' });
+  }
+
+  try {
+    const user = await getAsync('SELECT id, name, role, password FROM Users WHERE id = ?', [username.trim()]);
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Invalid username or password credentials.' });
+    }
+
+    // Omit password from output
+    const { password: _, ...userProfile } = user;
+    res.json({ message: 'Login successful', user: userProfile });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error during authentication.' });
+  }
 });
 
-// 2. Get Rooms (Resources) with optional filtering by location or hotel
+// 1. Get Logged-in User Profile
+app.get('/api/me', authMiddleware, (req, res) => {
+  const { password: _, ...userProfile } = req.user;
+  res.json(userProfile);
+});
+
+// 2. Get Rooms (Resources)
 app.get('/api/rooms', async (req, res) => {
   try {
     const { location, hotel } = req.query;
@@ -59,7 +81,7 @@ app.get('/api/rooms', async (req, res) => {
   }
 });
 
-// 3. Create Reservation (BR1, BR2, BR3, BR4, BR5, BR6, BR7 + Dates, Hotel & Location)
+// 3. Create Reservation (BR1, BR2, BR3, BR4, BR5, BR6, BR7)
 app.post('/api/reservations', authMiddleware, async (req, res) => {
   const { roomId, quantity, customerName, phone, checkInDate, checkOutDate } = req.body;
   const user = req.user;
@@ -93,14 +115,12 @@ app.post('/api/reservations', authMiddleware, async (req, res) => {
   try {
     await runAsync('BEGIN IMMEDIATE TRANSACTION');
 
-    // Fetch room status inside transaction
     const room = await getAsync('SELECT * FROM Resources WHERE id = ?', [roomId]);
     if (!room) {
       await runAsync('ROLLBACK');
       return res.status(404).json({ error: 'Selected room does not exist.' });
     }
 
-    // Check inventory
     if (room.availability < qtyNum) {
       await runAsync('ROLLBACK');
       return res.status(400).json({ 
@@ -123,20 +143,17 @@ app.post('/api/reservations', authMiddleware, async (req, res) => {
 
     const reservationId = resResult.lastID;
 
-    // Insert Reservation Item (Snapshot of rate & details)
     await runAsync(
       `INSERT INTO ReservationItems (reservation_id, room_id, room_name, quantity, rate_snapshot, subtotal)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [reservationId, room.id, room.name, qtyNum, rateSnapshot, baseTotal]
     );
 
-    // Deduct Availability
     await runAsync(
       `UPDATE Resources SET availability = availability - ? WHERE id = ?`,
       [qtyNum, room.id]
     );
 
-    // Write Status History log
     await runAsync(
       `INSERT INTO StatusHistory (reservation_id, previous_status, new_status, actor_id)
        VALUES (?, NULL, 'CONFIRMED', ?)`,
@@ -145,7 +162,6 @@ app.post('/api/reservations', authMiddleware, async (req, res) => {
 
     await runAsync('COMMIT');
 
-    // Fetch created reservation details
     const newReservation = await getAsync('SELECT * FROM Reservations WHERE id = ?', [reservationId]);
     const items = await allAsync('SELECT * FROM ReservationItems WHERE reservation_id = ?', [reservationId]);
 
@@ -192,34 +208,28 @@ app.post('/api/reservations/:id/cancel', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Reservation not found' });
     }
 
-    // BR10: Access Control - Users can only cancel their own bookings
     if (reservation.user_id !== user.id && user.role !== 'admin') {
       await runAsync('ROLLBACK');
       return res.status(403).json({ error: 'Forbidden: You cannot cancel another user\'s booking.' });
     }
 
-    // Only CONFIRMED bookings can be cancelled by user
     if (reservation.status !== 'CONFIRMED') {
       await runAsync('ROLLBACK');
       return res.status(400).json({ error: `Cannot cancel a reservation that is in '${reservation.status}' status.` });
     }
 
-    // BR9: Check capacity_restored flag to prevent double inventory restoration
     if (reservation.capacity_restored === 1) {
       await runAsync('ROLLBACK');
       return res.status(400).json({ error: 'Reservation inventory has already been restored.' });
     }
 
-    // Get item details to know room_id and quantity
     const item = await getAsync('SELECT * FROM ReservationItems WHERE reservation_id = ?', [reservationId]);
 
-    // Update Status to CANCELLED and set capacity_restored = 1
     await runAsync(
       `UPDATE Reservations SET status = 'CANCELLED', capacity_restored = 1 WHERE id = ?`,
       [reservationId]
     );
 
-    // Restore Inventory
     if (item) {
       await runAsync(
         `UPDATE Resources SET availability = availability + ? WHERE id = ?`,
@@ -227,7 +237,6 @@ app.post('/api/reservations/:id/cancel', authMiddleware, async (req, res) => {
       );
     }
 
-    // Write Status History
     await runAsync(
       `INSERT INTO StatusHistory (reservation_id, previous_status, new_status, actor_id)
        VALUES (?, ?, 'CANCELLED', ?)`,

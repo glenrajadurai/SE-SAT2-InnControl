@@ -2,16 +2,27 @@
 
 **InnControl** is a complete, production-grade Hotel Room Reservation Web Application built with **Node.js, Express, SQLite3, Vanilla JavaScript, and Tailwind CSS**.
 
-The system strictly enforces the Software Engineering **SAT II** specifications while delivering a polished light-themed web interface complete with real-time room availability tracking, rate snapshotting, transaction atomicity, destination filtering, check-in/check-out date selection, and role-separated Guest vs. Admin portals.
+The system strictly enforces the Software Engineering **SAT II** specifications while delivering a polished light-themed web interface complete with real-time room availability tracking, rate snapshotting, transaction atomicity, destination filtering, check-in/check-out date selection, authentic username & password login, and role-separated Guest vs. Admin portals.
 
 ---
 
 ## 🌟 Features & Specifications
 
+### 🔑 Authentication & Pre-configured Credentials
+Users log in with their **Username** and **Password** via the interactive Login Modal.
+
+| Username | Password | Role | Access Level |
+| :--- | :--- | :--- | :--- |
+| `user1` | `user123` | Customer | Room Booking, Personal Reservations, Cancellation |
+| `user2` | `user123` | Customer | Room Booking, Personal Reservations, Cancellation |
+| `admin1` | `admin123` | Administrator | System Reservations Console, Sequential Status Workflow |
+
+---
+
 ### 🎨 Visual & UI Design
 - **Color Scheme**: Clean, modern light palette with Indigo/Slate accents, subtle borders (`border-slate-200`), bold typography (`Inter`), and high contrast readable text.
 - **Portals**: Distinct **Guest Portal** (Find & Book Rooms, My Booking History) and **Admin Console** (System Reservations & Sequential Status Transitions).
-- **Simulated Auth Switcher**: Dropdown in header allows instant switching between `user1` (Customer), `user2` (Customer), and `admin1` (Administrator).
+- **Interactive Authentication**: Header button triggers the Login Modal with quick-fill demo buttons for `user1`, `user2`, and `admin1`.
 
 ---
 
@@ -61,9 +72,9 @@ The system strictly enforces the Software Engineering **SAT II** specifications 
 
 ### Installation & Run
 
-1. **Clone or Navigate to Directory**:
+1. **Navigate to your cloned/downloaded folder**:
    ```bash
-   cd "c:\Users\glenr\Documents\III Semester\SE\SE SAT2"
+   cd <your-cloned-or-downloaded-folder>
    ```
 
 2. **Install Dependencies**:
@@ -83,8 +94,9 @@ The system strictly enforces the Software Engineering **SAT II** specifications 
 
 ## 📡 API Reference
 
-### Public / Guest Endpoints
+### Authentication & Public / Guest Endpoints
 
+- `POST /api/login` - Authenticate customer or admin credentials.
 - `GET /api/rooms` - Fetch list of active rooms (Optional query params: `location`, `hotel`).
 - `GET /api/me` - Fetch active user identity (Header `x-user-id: user1`).
 - `POST /api/reservations` - Create a room booking transactionally (Header `x-user-id: user1`).
